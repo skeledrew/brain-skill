@@ -1,8 +1,8 @@
 # This file is part of brain-skill
 
-# brain-skill - This is a Mycroft skill that is intended to be dynamically extensible and modifiable. 
+# brain-skill - This is a Mycroft skill that is intended to be dynamically extensible and modifiable.
 
-# @author Andrew Phillips  
+# @author Andrew Phillips
 # @copyright 2017 Andrew Phillips <skeledrew@gmail.com>
 
 # brain-skill is free software; you can redistribute it and/or
@@ -17,3 +17,52 @@
 
 # You should have received a copy of the GNU Affero General Public
 # License along with brain-skill.  If not, see <http://www.gnu.org/licenses/>.
+
+import re, itertools
+
+import pdb
+
+
+def expand_rx(rx, ignore_named_groups=True):
+    poss = [0]  # initialized positions
+    rxs = []
+    level = 0
+    named = []
+
+    for idx in range(len(rx)):
+        # mark targeted group points
+
+        if rx[idx] == '(':
+            level += 1
+
+            if not rx[idx+1] == '?':
+                # regular group
+                poss.append(idx)
+
+            else:
+                # may need to avoid named groups
+                named.append(idx)
+            continue
+
+        if rx[idx] == ')':
+
+            if ignore_named_groups and named:
+                if level == named[-1]: named.pop(-1)
+
+            else:
+                poss.append(idx)
+            level -= 1
+            continue
+    poss.append(len(rx))
+    start = poss.pop(0)
+    parts = []
+
+    while poss:
+        end = poss.pop(0)
+        parts.append(rx[start:end])
+        start = end + 1
+    parts = [part.split('|') for part in parts]
+
+    for prod in itertools.product(*parts):
+        rxs.append(''.join(prod))
+    return rxs
