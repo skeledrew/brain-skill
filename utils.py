@@ -18,12 +18,14 @@
 # You should have received a copy of the GNU Affero General Public
 # License along with brain-skill.  If not, see <http://www.gnu.org/licenses/>.
 
+
 import re, itertools
 
 import pdb
 
 
 def expand_rx(rx, ignore_named_groups=True):
+    # 17-08-24
     poss = [0]  # initialized positions
     rxs = []
     level = 0
@@ -66,3 +68,8 @@ def expand_rx(rx, ignore_named_groups=True):
     for prod in itertools.product(*parts):
         rxs.append(''.join(prod))
     return rxs
+
+def hash_sum(data):
+    # 17-08-24
+    return adler32(bytes(data, 'utf-8'))
+
