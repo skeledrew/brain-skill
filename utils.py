@@ -20,11 +20,12 @@
 
 
 import re, itertools
-
+from zlib import adler32
 import pdb
 
+from mycroft.util.log import getLogger
 
-log_file = 'history.log'
+LOGGER = getLogger(__name__)
 
 
 def expand_rx(rx, ignore_named_groups=True):
@@ -73,17 +74,8 @@ def expand_rx(rx, ignore_named_groups=True):
     return rxs
 
 def hash_sum(data):
-    # 17-08-24
-    return adler32(bytes(data, 'utf-8'))
+    # 17-08-24 - remove 'utf-8' arg from bytes for py2 compat
+    return adler32(bytes(data))
 
-def write_log(msg, log_it=None, print_=True, log=None):
-    # 17-06-11
-    global log_file
-    if log: log_file = log
-
-    with open(log_file, 'a') as lf:
-        lf.write(msg + '\n')
-    if print_: print(msg)
-    if log_it: log_it(msg)
-    return
-
+if __name__ == '__main__':
+    print('Nothing to run directly here...')
