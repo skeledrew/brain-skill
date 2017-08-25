@@ -24,6 +24,9 @@ import re, itertools
 import pdb
 
 
+log_file = 'history.log'
+
+
 def expand_rx(rx, ignore_named_groups=True):
     # 17-08-24
     poss = [0]  # initialized positions
@@ -72,4 +75,15 @@ def expand_rx(rx, ignore_named_groups=True):
 def hash_sum(data):
     # 17-08-24
     return adler32(bytes(data, 'utf-8'))
+
+def write_log(msg, log_it=None, print_=True, log=None):
+    # 17-06-11
+    global log_file
+    if log: log_file = log
+
+    with open(log_file, 'a') as lf:
+        lf.write(msg + '\n')
+    if print_: print(msg)
+    if log_it: log_it(msg)
+    return
 
