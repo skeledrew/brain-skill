@@ -48,6 +48,7 @@ from abilities import *
 
 
 __author__ = 'skeledrew'
+__version__ = 0.2.0
 LOGGER = getLogger(__name__)
 
 
@@ -99,24 +100,20 @@ class BrainSkill(MycroftSkill):
             for idx in range(len(parts)):
                 # separate keywords from names
                 part = parts[idx]
-                self.log.debug('index = {}, part = {}'.format(idx, part))
 
                 if section and part == '(':
                     # got a complete keyword
                     entity_type = self.make_entity_type(section)
-                    self.log.debug('keyword; section = "{}"; entype = "{}"'.format(str(section), entity_type))
                     intent_builder.require(entity_type)
                     section = '('
                     continue
                 section += part
                 match = re.match('\(\?P<\w+>.+\)', section)
-                #self.log.debug('section: {}, match = {}'.format(section, repr(match)))
 
                 if match:
                     # got a named group
                     span = re.search('<\w+>', section).span()
                     entity_type = section[span[0]+1:span[1]-1]
-                    self.log.debug('named grp; span = {}; entype = "{}"; section = "{}"; idx = {}'.format(str(span), entity_type, section, idx))
 
                     if not idx == len(parts) - 1 and re.match('(\?|\*).*', parts[idx + 1]):
                         intent_builder.optionally(entity_type)
@@ -126,7 +123,7 @@ class BrainSkill(MycroftSkill):
                     section = ''
                     continue
             intents.append(intent_builder.build())
-            self.log.debug('Created intent: {}'.format(str(intents[-1].__dict__)))
+            self.log.info('Created intent: {}'.format(str(intents[-1].__dict__)))
         return intents
 
     def make_entity_type(self, entity):
@@ -149,7 +146,6 @@ class TestSkill(MycroftSkill):
         self.speak('testing one two three')
 
 def create_skill():
-    #return TestSkill()
     return BrainSkill()
 
 
