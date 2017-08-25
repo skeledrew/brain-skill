@@ -1,8 +1,9 @@
+
 # This file is part of brain-skill
 
-# brain-skill - This is a Mycroft skill that is intended to be dynamically extensible and modifiable. 
+# brain-skill - This is a Mycroft skill that is intended to be dynamically extensible and modifiable.
 
-# @author Andrew Phillips  
+# @author Andrew Phillips
 # @copyright 2017 Andrew Phillips <skeledrew@gmail.com>
 
 # brain-skill is free software; you can redistribute it and/or
@@ -17,3 +18,12 @@
 
 # You should have received a copy of the GNU Affero General Public
 # License along with brain-skill.  If not, see <http://www.gnu.org/licenses/>.
+
+
+def ping(this=None, msg=None):
+    if not this: return 'ping'
+    this.speak('I\'m here!')
+
+def learn(this=None, msg=None):
+    if not this: return 'learn new ability'
+    return

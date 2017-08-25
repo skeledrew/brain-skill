@@ -44,11 +44,12 @@ reload(utils)  # py2 method
 for name in dir(utils):
     # unpack
     if not '__' in name: exec('{0} = getattr(utils, "{0}")'.format(name))
-from abilities import *
+import abilities
+reload(abilities)
 
 
 __author__ = 'skeledrew'
-__version__ = 0.2.0
+__version__ = '0.2.1'
 LOGGER = getLogger(__name__)
 
 
@@ -57,11 +58,14 @@ class BrainSkill(MycroftSkill):
     def __init__(self):
         super(BrainSkill, self).__init__(name='BrainSkill')
         self.h_prefix = 'Dyn'
+        self.bridged_funcs = {}
 
     def initialize(self):
         say_rx = 'say (?P<Words>.*)'
         self.add_ability(say_rx, self.handle_say_intent)
         self.add_ability('holla back', self.handle_holler_intent)
+        self.add_ability('reload abilities', self.reload_abilities)
+        self.load_abilities()
 
     def add_ability(self, rx, handler):
         self.log.info('Binding "{}" to "{}"'.format(rx, repr(handler)))
@@ -70,6 +74,35 @@ class BrainSkill(MycroftSkill):
         while intents:
             intent = intents.pop()
             self.register_intent(intent, handler)
+
+    def reload_abilities(self):
+        reload(abilities)
+        self.load_abilities()
+        self.speak('activities reloaded!')
+
+    def load_abilities(self):
+        # load core and pipes
+
+        for abl in dir(abilities):
+            # core abilities
+            if '__' in abl: continue
+            abl = getattr(abilities, abl)
+            rx = abl()
+            self.bridged_funcs[rx] = abl
+            self.add_ability(rx, self.handle_external_intent)
+
+    def handle_external_intent(self, msg):
+        # bridge to function
+        self.log.debug('bridging; m_data = {}'.format(repr(msg.data)))
+        ext_func = None
+        utt = msg.data['utterance']
+
+        for rx in self.bridged_funcs:
+            self.log.debug('searching for correct bridge; rx = {}; utt = {}'.format(rx, utt))
+            if not re.match(rx, utt): continue
+            ext_func = self.bridged_funcs[rx]
+            break
+        ext_func(self, msg)
 
     def handle_say_intent(self, msg):
         words = msg.data.get('Words')
@@ -89,7 +122,7 @@ class BrainSkill(MycroftSkill):
             if re.match('^[a-z0-9 ]+$', combo):
                 # keywords only
                 entity_type = self.make_entity_type(combo)
-                intent = IntentBuilder(i_name).require(entity_type).build()
+                intent = IntentBuilder(re.sub('Keywords?', 'Intent', entity_type)).require(entity_type).build()
                 intents.append(intent)
                 continue
             self.register_regex(combo)

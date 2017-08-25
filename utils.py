@@ -77,5 +77,11 @@ def hash_sum(data):
     # 17-08-24 - remove 'utf-8' arg from bytes for py2 compat
     return adler32(bytes(data))
 
+def bind_func(func, inst, name=''):
+    # bind a function to a class as a method
+    if not name: name = func.__name__
+    setattr(inst, name, func.__get__(inst, inst.__class__))
+    return func
+
 if __name__ == '__main__':
     print('Nothing to run directly here...')
