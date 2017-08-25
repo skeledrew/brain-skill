@@ -26,77 +26,25 @@ import sys
 import pdb
 
 
-log_file = '/tmp/history.log'
 interact = False
 
 
-def expand_rx(rx, ignore_named_groups=True):
-    # 17-08-24
-    poss = [0]  # initialized positions
-    rxs = []
-    level = 0
-    named = []
-
-    for idx in range(len(rx)):
-        # mark targeted group points
-
-        if rx[idx] == '(':
-            level += 1
-
-            if not rx[idx+1] == '?':
-                # regular group
-                poss.append(idx)
-
-            else:
-                # may need to avoid named groups
-                named.append(idx)
-            continue
-
-        if rx[idx] == ')':
-
-            if ignore_named_groups and named:
-                if level == named[-1]: named.pop(-1)
-
-            else:
-                poss.append(idx)
-            level -= 1
-            continue
-    poss.append(len(rx))
-    start = poss.pop(0)
-    parts = []
-
-    while poss:
-        end = poss.pop(0)
-        parts.append(rx[start:end])
-        start = end + 1
-    parts = [part.split('|') for part in parts]
-
-    for prod in itertools.product(*parts):
-        rxs.append(''.join(prod))
-    return rxs
-
-def hash_sum(data):
-    # 17-08-24 - removed 2nd arg to bytes for py2 compat
-    return adler32(bytes(data))
-
-def write_log(msg, log_it=None, print_=True, log=None):
-    # 17-06-11
-    global log_file
-    if log: log_file = log
-
-    with open(log_file, 'a') as lf:
-        lf.write(msg + '\n')
-    if print_: print(msg)
-    if log_it: log_it(msg)
-    return
-
+import sys
+from os.path import dirname, abspath
 
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill
 from mycroft.util.log import getLogger
 
-#from utils import *
-#from abilities import *
+sys.path.append(abspath(dirname(__file__)))  # local imports hack
+
+import utils
+reload(utils)  # py2 method
+
+for name in dir(utils):
+    # unpack
+    if not '__' in name: exec('{0} = getattr(utils, "{0}")'.format(name))
+from abilities import *
 
 
 __author__ = 'skeledrew'
@@ -113,10 +61,9 @@ class BrainSkill(MycroftSkill):
         say_rx = 'say (?P<Words>.*)'
         self.add_ability(say_rx, self.handle_say_intent)
         self.add_ability('holla back', self.handle_holler_intent)
-        #intent = 
 
     def add_ability(self, rx, handler):
-        write_log('Binding "{}" to "{}"'.format(rx, repr(handler)), self.log.debug)
+        self.log.info('Binding "{}" to "{}"'.format(rx, repr(handler)))
         intents = self.make_intents(rx)
 
         while intents:
@@ -150,38 +97,41 @@ class BrainSkill(MycroftSkill):
             section = ''
 
             for idx in range(len(parts)):
+                # separate keywords from names
                 part = parts[idx]
+                self.log.debug('index = {}, part = {}'.format(idx, part))
 
                 if section and part == '(':
                     # got a complete keyword
-                    write_log('section: {}'.format(str(section)), self.log.debug)
-                    entity = section.strip()
-                    entity_type = self.make_entity_type(entity)
+                    entity_type = self.make_entity_type(section)
+                    self.log.debug('keyword; section = "{}"; entype = "{}"'.format(str(section), entity_type))
                     intent_builder.require(entity_type)
-                    section = part
+                    section = '('
                     continue
                 section += part
-                match = re.match('\(\?<.+>\)', section)
+                match = re.match('\(\?P<\w+>.+\)', section)
+                #self.log.debug('section: {}, match = {}'.format(section, repr(match)))
 
                 if match:
                     # got a named group
-                    write_log('section: {}'.format(str(section)), self.log.debug)
-                    rnge = match.span()
-                    entity_type = combo[rnge[0]:rnge[1]]
+                    span = re.search('<\w+>', section).span()
+                    entity_type = section[span[0]+1:span[1]-1]
+                    self.log.debug('named grp; span = {}; entype = "{}"; section = "{}"; idx = {}'.format(str(span), entity_type, section, idx))
 
                     if not idx == len(parts) - 1 and re.match('(\?|\*).*', parts[idx + 1]):
                         intent_builder.optionally(entity_type)
 
                     else:
                         intent_builder.require(entity_type)
+                    section = ''
                     continue
             intents.append(intent_builder.build())
-            write_log('Created intent: {}'.format(str(intents[-1].__dict__)), self.log.debug)
+            self.log.debug('Created intent: {}'.format(str(intents[-1].__dict__)))
         return intents
 
     def make_entity_type(self, entity):
         entity = entity.strip()
-        entity_type = ''.join(entity.title().split(' ')) + 'Keyword' + 's' if ' ' in entity else ''
+        entity_type = ''.join(entity.title().split(' ')) + 'Keyword' + ('s' if ' ' in entity else '')
         self.register_vocabulary(entity, entity_type)
         return entity_type
 
@@ -204,4 +154,4 @@ def create_skill():
 
 
 if sys.argv[0] == '' and not __name__ == '__main__':
-    interact = True
+    interact = True # for pdb trace activation
