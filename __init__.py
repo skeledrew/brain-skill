@@ -75,10 +75,10 @@ class BrainSkill(MycroftSkill):
             intent = intents.pop()
             self.register_intent(intent, handler)
 
-    def reload_abilities(self):
+    def reload_abilities(self, msg):
         reload(abilities)
         self.load_abilities()
-        self.speak('activities reloaded!')
+        self.speak('abilities reloaded!')
 
     def load_abilities(self):
         # load core and pipes
