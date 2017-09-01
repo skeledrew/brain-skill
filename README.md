@@ -14,7 +14,6 @@
 ## Known Bugs, Quirks & Limits
 - External speaking (ping) is repeated sometimes
 
-# To Do
+## To Do
 - learn spelling and new ability
 - resource downloader
-- eye actions
