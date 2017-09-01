@@ -22,18 +22,55 @@
 import re, itertools
 from zlib import adler32
 import pdb
+import sys
+import json
+from os.path import exists, dirname
+from threading import Timer
+from copy import deepcopy
 
 from mycroft.util.log import getLogger
 
 LOGGER = getLogger(__name__)
+interact = False
+
+
+class SkillSettings():
+
+    def __init__(self, path):
+        self._path = dirname(path) + '/settings.json'
+        self._settings = self._old_settings = {}
+        if exists(self._path): self._load()
+        self._interval = 5
+        self.timer = Timer(self._interval, self._save)
+
+    def read(self, key):
+        return self._settings[key] if key in self._settings else None
+
+    def write(self, key, value):
+        self._settings[key] = value
+
+    def _load(self):
+        with open(self._path) as fo:
+            self._settings = json.load(fo)
+        self._old_settings = deepcopy(self._settings)
+
+    def _save(self):
+        if self.timer.is_alive(): self.timer.cancel()
+        self.timer = Timer(self._interval, self._save)
+        if self._settings == self._old_settings: return
+        with open(self._path, 'w') as fo:
+            json.dump(self._settings, fo)
+        self._old_settings = deepcopy(self._settings)
 
 
 def expand_rx(rx, ignore_named_groups=True):
     # 17-08-24
+    # -26 - fixed bug and compressed
     poss = [0]  # initialized positions
     rxs = []
     level = 0
     named = []
+    '''if interact: pdb.set_trace()
 
     for idx in range(len(rx)):
         # mark targeted group points
@@ -66,8 +103,10 @@ def expand_rx(rx, ignore_named_groups=True):
     while poss:
         end = poss.pop(0)
         parts.append(rx[start:end])
-        start = end + 1
-    parts = [part.split('|') for part in parts]
+        start = end + 1'''
+    ###
+    parts = re.split(r'\((.*?)\)', rx)
+    parts = [['(%s)' % p for p in part.split('|')] if i % 2 else [part] for i, part in enumerate(parts)]
 
     for prod in itertools.product(*parts):
         rxs.append(''.join(prod))
@@ -82,6 +121,10 @@ def bind_func(func, inst, name=''):
     if not name: name = func.__name__
     setattr(inst, name, func.__get__(inst, inst.__class__))
     return func
+
+if sys.argv[0] == '' and not __name__ == '__main__':
+    interact = True # for pdb trace activation
+    print('pdb debugging activated')
 
 if __name__ == '__main__':
     print('Nothing to run directly here...')

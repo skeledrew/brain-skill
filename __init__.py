@@ -35,6 +35,7 @@ from os.path import dirname, abspath
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill
 from mycroft.util.log import getLogger
+from mycroft.messagebus.message import Message
 
 sys.path.append(abspath(dirname(__file__)))  # local imports hack
 
@@ -59,6 +60,8 @@ class BrainSkill(MycroftSkill):
         super(BrainSkill, self).__init__(name='BrainSkill')
         self.h_prefix = 'Dyn'
         self.bridged_funcs = {}
+        self.Message = Message
+        self.waiting = True
 
     def initialize(self):
         say_rx = 'say (?P<Words>.*)'
@@ -66,6 +69,7 @@ class BrainSkill(MycroftSkill):
         self.add_ability('holla back', self.handle_holler_intent)
         self.add_ability('reload abilities', self.reload_abilities)
         self.load_abilities()
+        self.emitter.on('recognizer_loop:audio_output_end', self.ready_to_continue)
 
     def add_ability(self, rx, handler):
         self.log.info('Binding "{}" to "{}"'.format(rx, repr(handler)))
@@ -73,7 +77,12 @@ class BrainSkill(MycroftSkill):
 
         while intents:
             intent = intents.pop()
-            self.register_intent(intent, handler)
+
+            try:
+                self.register_intent(intent, handler)
+
+            except Exception as e:
+                self.log.error('Failed to bind {} to {}: {}. Skipped...'.format(intent, handler.__name__, repr(e)))
 
     def reload_abilities(self, msg):
         reload(abilities)
@@ -87,18 +96,22 @@ class BrainSkill(MycroftSkill):
             # core abilities
             if '__' in abl: continue
             abl = getattr(abilities, abl)
+            self.log.debug('loadup abilities = {}; abl = {}'.format(repr(abilities), repr(abl)))
+            if not 'function' in repr(abl): continue
             rx = abl()
+            if not isinstance(rx, str) or not rx: continue
             self.bridged_funcs[rx] = abl
             self.add_ability(rx, self.handle_external_intent)
 
     def handle_external_intent(self, msg):
         # bridge to function
-        self.log.debug('bridging; m_data = {}'.format(repr(msg.data)))
+        #self.log.debug('bridging; m_data = {}'.format(repr(msg.data)))
         ext_func = None
-        utt = msg.data['utterance']
+        utt = msg.data.get('utterance')
 
         for rx in self.bridged_funcs:
-            self.log.debug('searching for correct bridge; rx = {}; utt = {}'.format(rx, utt))
+            match = 'True' if rx == utt else 'False'
+            self.log.debug('searching for correct bridge; rx = {}; utt = {}; match = {}'.format(rx, utt, match))
             if not re.match(rx, utt): continue
             ext_func = self.bridged_funcs[rx]
             break
@@ -112,12 +125,14 @@ class BrainSkill(MycroftSkill):
         self.speak('Woo woooo')
 
     def make_intents(self, rx):
+        rx_combos = [rx]
         rx_combos = expand_rx(rx.strip())
         intents = []
         if interact: pdb.set_trace()
 
         for combo in rx_combos:
             i_name = '{}{}Intent'.format(self.h_prefix, hash_sum(combo))
+            #self.log.debug('combo = {}'.format(combo))
 
             if re.match('^[a-z0-9 ]+$', combo):
                 # keywords only
@@ -164,6 +179,20 @@ class BrainSkill(MycroftSkill):
         entity_type = ''.join(entity.title().split(' ')) + 'Keyword' + ('s' if ' ' in entity else '')
         self.register_vocabulary(entity, entity_type)
         return entity_type
+
+    def ready_to_continue(self):
+        self.waiting = False
+
+    def exec_chain(self, chain):
+
+        for link in chain:
+            self.waiting = True
+            self.emitter.emit(Message(link['type'], link['data'], link['context']))
+            timeout = 0
+
+            while self.waiting and timeout < 10:
+                time.sleep(1)
+                timeout += 1
 
 class TestSkill(MycroftSkill):
 
