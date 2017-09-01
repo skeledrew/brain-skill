@@ -5,11 +5,11 @@
 - holla back
 - reload abilities
 - ping
-- reset eyes*
+- reset eyes *
 - look up/down/left/right/crossed *
-- set brightness to N *
+- set brightness to N * (N = 1-30)
 - what version are you
-*Mark 1 enclosure
+- * Mark 1 enclosure
 
 ## Known Bugs, Quirks & Limits
 - External speaking (ping) is repeated sometimes
