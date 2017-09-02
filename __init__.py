@@ -62,6 +62,7 @@ class BrainSkill(MycroftSkill):
         self.bridged_funcs = {}
         self.Message = Message
         self.waiting = True
+        self.thot_chains = {}
 
     def initialize(self):
         say_rx = 'say (?P<Words>.*)'
@@ -69,6 +70,7 @@ class BrainSkill(MycroftSkill):
         self.add_ability('holla back', self.handle_holler_intent)
         self.add_ability('reload abilities', self.reload_abilities)
         self.load_abilities()
+        self.load_chains()
         self.emitter.on('recognizer_loop:audio_output_end', self.ready_to_continue)
 
     def add_ability(self, rx, handler):
@@ -87,6 +89,7 @@ class BrainSkill(MycroftSkill):
     def reload_abilities(self, msg):
         reload(abilities)
         self.load_abilities()
+        self.load_chains()
         self.speak('abilities reloaded!')
 
     def load_abilities(self):
@@ -96,7 +99,7 @@ class BrainSkill(MycroftSkill):
             # core abilities
             if '__' in abl: continue
             abl = getattr(abilities, abl)
-            self.log.debug('loadup abilities = {}; abl = {}'.format(repr(abilities), repr(abl)))
+            #self.log.debug('loadup abilities = {}; abl = {}'.format(repr(abilities), repr(abl)))
             if not 'function' in repr(abl): continue
             rx = abl()
             if not isinstance(rx, str) or not rx: continue
@@ -116,6 +119,28 @@ class BrainSkill(MycroftSkill):
             ext_func = self.bridged_funcs[rx]
             break
         ext_func(self, msg)
+
+    def load_chains(self):
+        self.thot_chains = {}
+
+        for chain in self.settings['thot_chains']:
+            # chained abilities
+            if not isinstance(chain, str): continue
+            self.thot_chains[chain] = self.settings['thot_chains'][chain]
+            self.add_ability(chain, self.handle_chain_intent)
+
+    def handle_chain_intent(self, msg):
+        # bridge to loaded chain
+        chain = None
+        utt = msg.data.get('utterance')
+
+        for ch_name in self.thot_chains:
+            match = 'True' if ch_name == utt else 'False'
+            self.log.debug('searching for correct chain; chain name = {}; utt = {}; match = {}'.format(ch_name, utt, match))
+            if not re.match(ch_name, utt): continue
+            chain = self.thot_chains[ch_name]
+            break
+        self.exec_chain(chain)
 
     def handle_say_intent(self, msg):
         words = msg.data.get('Words')
