@@ -21,7 +21,7 @@
 
 import re, itertools
 from zlib import adler32
-import sys
+import sys, time
 
 import pdb
 
@@ -50,7 +50,7 @@ reload(abilities)
 
 
 __author__ = 'skeledrew'
-__version__ = '0.2.1'
+__version__ = '0.3.0'
 LOGGER = getLogger(__name__)
 
 
@@ -181,13 +181,22 @@ class BrainSkill(MycroftSkill):
         return entity_type
 
     def ready_to_continue(self):
+        self.log.debug('Ready event detected')
         self.waiting = False
 
     def exec_chain(self, chain):
 
         for link in chain:
             self.waiting = True
-            self.emitter.emit(Message(link['type'], link['data'], link['context']))
+
+            if isinstance(link, dict):
+                abilities.whisper(self, link)
+
+            elif isinstance(link, list) and link[0] == 'whisper':
+                abilities.whisper(self, link[1])
+
+            else:
+                abilities.shout(self, link[1])
             timeout = 0
 
             while self.waiting and timeout < 10:

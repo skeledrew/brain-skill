@@ -9,12 +9,13 @@
 - look up/down/left/right/crossed *
 - set brightness to N * (N = 1-30)
 - what version are you
-
 - `* Mark 1 enclosure`
 
 ## Known Bugs, Quirks & Limits
-- External speaking (ping) is repeated sometimes
+- External speaking is repeated sometimes
 
 ## To Do
 - learn spelling and new ability
 - resource downloader
+- autogenerate regex, vocab files
+- help system

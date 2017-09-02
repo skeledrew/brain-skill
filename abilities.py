@@ -79,18 +79,13 @@ def start_web_server(this=None, msg=None):
     this.speak('Web interface closed')
 
 def morning_report(this=None, msg=None):
+    # mainly test and demo purposes
     if not this: return 'good morning' #[{'lang': 'en-us', 'utterances': ['good morning']}]
     chain = []
-    #chain.append({'target': 'SpeakSkill:SpeakIntent', 'data': {'Words': 'good morning'}, 'context': None})
-    #this.speak('good morning!')
-    #shout(this, 'what time is it')  # works!
-    whisper(this, 'call intent speak intent in skill speak skill with data Words equal you did it')  # works!
-    #whisper(this, {'target': 'SpeakSkill:SpeakIntent', 'data': {'Words': 'hey there!'}})  # works!
-    #time.sleep(2)
-    #chain.append({'type': 'recognizer_loop:utterance', 'data': {'lang': 'en-us', 'utterances': ['what time is it']}, 'context': None})
-    #shout(this, 'what time is it')
-    #time.sleep(2)
-    #whisper(this, {'type': 'WeatherSkill:CurrentWeatherIntent', 'data': {'utterance': 'what is the weather', 'Weather': 'weather'}})
+    chain.append({'target': 'SpeakSkill:SpeakIntent', 'data': {'Words': 'good morning'}, 'context': None})
+    chain.append(['shout', 'what time is it'])
+    chain.append(['shout', 'what is the weather'])
+    this.exec_chain(chain)
 
 def whisper(this=None, msg=None):
     # direct query to a particular skill/intent; should prob not register
@@ -125,7 +120,10 @@ def whisper(this=None, msg=None):
 def shout(this=None, utterances=None):
     # broadcast query so any skill/intent can handle
     if not this: return None  # prevent addition as ability
-    if not type(utterances) in [str, list]: return None
+
+    if not type(utterances) in [str, list]:
+        this.log.error('Expected string or list, got: {} which is {}'.format(repr(utterances), str(type(utterances))[1:-1]))
+        return None
     if isinstance(utterances, str): utterances = [utterances.strip()]
     this.emitter.emit(Message("recognizer_loop:utterance", {"lang": "en-us", "utterances": utterances}))
     return True
@@ -137,6 +135,7 @@ def core_version(this=None, msg=None):
 
 def core_update(this=None, msg=None):
     # TODO: needs sudo workaround
+    return None  # disable
     if not this: return 'upgrade yourself'
     this.speak('I will now attempt to upgrade to the latest version')
     out = ''
@@ -147,5 +146,5 @@ def core_update(this=None, msg=None):
         this.speak('Update failed. Please see log for details.')
         return
     this.log.info('Update tail = {}'.format('\n\t\t'.join(out.split('\n')[-5:])))
-    #out = sp.check_output('sudo apt-get install --only-upgrade mycroft-core mimic -y'.split(' '))
-    #this.log.info('Upgrade tail = {}'.format(out))
+    out = sp.check_output('sudo apt-get install --only-upgrade mycroft-core mimic -y'.split(' '))
+    this.log.info('Upgrade tail = {}'.format(out))
