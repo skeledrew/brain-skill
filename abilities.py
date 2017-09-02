@@ -20,6 +20,7 @@
 
 
 import re, time
+import subprocess as sp
 
 from mycroft.messagebus.message import Message
 
@@ -72,16 +73,19 @@ def illum(this=None, msg=None):
 
 def start_web_server(this=None, msg=None):
     if not this: return 'start remote interface'
-    import remi
-    reload(remi)
+    this.speak('Starting web interface')
+    this.log.debug('Interface started')
+    sp.check_output(['python3', 'remiface.py'], shell-True)
+    this.speak('Web interface closed')
 
 def morning_report(this=None, msg=None):
     if not this: return 'good morning' #[{'lang': 'en-us', 'utterances': ['good morning']}]
     chain = []
-    chain.append({'type': 'SpeakSkill:SpeakIntent', 'data': {'Words': 'good morning'}, 'context': None})
+    #chain.append({'type': 'SpeakSkill:SpeakIntent', 'data': {'Words': 'good morning'}, 'context': None})
     #this.speak('good morning!')
+    shout(this, 'what time is it')
     #time.sleep(2)
-    chain.append({'type': 'recognizer_loop:utterance', 'data': {'lang': 'en-us', 'utterances': ['what time is it']}, 'context': None})
+    #chain.append({'type': 'recognizer_loop:utterance', 'data': {'lang': 'en-us', 'utterances': ['what time is it']}, 'context': None})
     #shout(this, 'what time is it')
     #time.sleep(2)
     #whisper(this, {'type': 'WeatherSkill:CurrentWeatherIntent', 'data': {'utterance': 'what is the weather', 'Weather': 'weather'}})
@@ -107,12 +111,12 @@ def whisper(this=None, msg=None):
         return
     this.log.error('Unable to process message: {}'.format(repr(msg)))
 
-def shout(emitter=None, utterances=None):
+def shout(this=None, utterances=None):
     # broadcast query so any skill/intent can handle
-    if not utterances: return None  # prevent addition as ability
+    if not this: return None  # prevent addition as ability
     if not type(utterances) in [str, list]: return None
-    if isinstance(utterances, str): utterance = [utterances]
-    emitter.emit(Message("recognizer_loop:utterance", {"lang": "en-us", "utterances": [utterances]}))
+    if isinstance(utterances, str): utterances = [utterances.strip()]
+    this.emitter.emit(Message("recognizer_loop:utterance", {"lang": "en-us", "utterances": utterances}))
     return True
 
 def version(this=None, msg=None):
