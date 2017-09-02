@@ -81,9 +81,11 @@ def start_web_server(this=None, msg=None):
 def morning_report(this=None, msg=None):
     if not this: return 'good morning' #[{'lang': 'en-us', 'utterances': ['good morning']}]
     chain = []
-    #chain.append({'type': 'SpeakSkill:SpeakIntent', 'data': {'Words': 'good morning'}, 'context': None})
+    #chain.append({'target': 'SpeakSkill:SpeakIntent', 'data': {'Words': 'good morning'}, 'context': None})
     #this.speak('good morning!')
-    shout(this, 'what time is it')
+    #shout(this, 'what time is it')  # works!
+    whisper(this, 'call intent speak intent in skill speak skill with data Words equal you did it')  # works!
+    #whisper(this, {'target': 'SpeakSkill:SpeakIntent', 'data': {'Words': 'hey there!'}})  # works!
     #time.sleep(2)
     #chain.append({'type': 'recognizer_loop:utterance', 'data': {'lang': 'en-us', 'utterances': ['what time is it']}, 'context': None})
     #shout(this, 'what time is it')
@@ -92,13 +94,22 @@ def morning_report(this=None, msg=None):
 
 def whisper(this=None, msg=None):
     # direct query to a particular skill/intent; should prob not register
-    if not this and not msg: return 'call intent (?P<Intent>.+) in skill (?P<Skill>.+) with data (?P<Data>.+)( and context )?(?P<Context>.+)?'
-    if isinstance(msg, Message) and 'Intent' in msg.data:
-        skill_id = msg.data.get('Skill')
-        intent_name = msg.data.get('Intent')
-        data = msg.data.get('Data')  # massage string into a dict
+    pattern = 'call intent (?P<Intent>.+) in skill (?P<Skill>.+) with data (?P<Data>.+)( and context )?(?P<Context>.+)?'
+    if not this and not msg: return None #pattern
+    data = {}
+
+    if isinstance(msg, str) and re.search(pattern, msg):
+        match = re.match(pattern, msg)
+        skill_id = match.group('Skill')
+        skill_id = ''.join(skill_id.title().split(' '))
+        intent_name = match.group('Intent')
+        intent_name = ''.join(intent_name.title().split(' '))
         target = '{}:{}'.format(skill_id, intent_name)
-        context = msg.data.get('Context') if 'Context' in msg.data else None
+        data = match.group('Data')  # massage string into a dict
+        data = re.sub(' *and *', '&', re.sub(' *equal *', '=', data))
+        data = {key: value for key, value in [[d.split('=')[0], d.split('=')[1]] for d in data.split('&')]}
+        context = match.group('Context') #if 'Context' in msg.data else None
+        this.log.info('Generated message params: target = {}, data = {}, context = {}'.format(target, data, context))
         this.emitter.emit(Message(target, data, context))
         return
 
@@ -119,7 +130,22 @@ def shout(this=None, utterances=None):
     this.emitter.emit(Message("recognizer_loop:utterance", {"lang": "en-us", "utterances": utterances}))
     return True
 
-def version(this=None, msg=None):
+def core_version(this=None, msg=None):
     if not this: return 'what version are you'
     import mycroft.version
     this.speak(mycroft.version.CORE_VERSION_STR)
+
+def core_update(this=None, msg=None):
+    # TODO: needs sudo workaround
+    if not this: return 'upgrade yourself'
+    this.speak('I will now attempt to upgrade to the latest version')
+    out = ''
+    try:
+        out = sp.check_output(['sudo', 'apt-get', 'update'], shell=True)
+    except Exception as e:
+        this.log.debug('Update failed: {}'.format(repr(e)))
+        this.speak('Update failed. Please see log for details.')
+        return
+    this.log.info('Update tail = {}'.format('\n\t\t'.join(out.split('\n')[-5:])))
+    #out = sp.check_output('sudo apt-get install --only-upgrade mycroft-core mimic -y'.split(' '))
+    #this.log.info('Upgrade tail = {}'.format(out))
