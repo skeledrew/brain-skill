@@ -93,7 +93,7 @@ def whisper(this=None, msg=None):
     if not this and not msg: return None #pattern
     data = {}
 
-    if isinstance(msg, str) and re.search(pattern, msg):
+    if isinstance(msg, unicode) and re.search(pattern, msg):
         match = re.match(pattern, msg)
         skill_id = match.group('Skill')
         skill_id = ''.join(skill_id.title().split(' '))
@@ -121,10 +121,10 @@ def shout(this=None, utterances=None):
     # broadcast query so any skill/intent can handle
     if not this: return None  # prevent addition as ability
 
-    if not type(utterances) in [str, list]:
+    if not type(utterances) in [str, list, unicode]:
         this.log.error('Expected string or list, got: {} which is {}'.format(repr(utterances), str(type(utterances))[1:-1]))
         return None
-    if isinstance(utterances, str): utterances = [utterances.strip()]
+    if isinstance(utterances, unicode): utterances = [utterances.strip()]
     this.emitter.emit(Message("recognizer_loop:utterance", {"lang": "en-us", "utterances": utterances}))
     return True
 

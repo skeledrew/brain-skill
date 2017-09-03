@@ -70,6 +70,7 @@ class BrainSkill(MycroftSkill):
         self.add_ability('holla back', self.handle_holler_intent)
         self.add_ability('reload abilities', self.reload_abilities)
         self.load_abilities()
+        if not 'thot_chains' in self.settings: self.settings['thot_chains'] = {}
         self.load_chains()
         self.emitter.on('recognizer_loop:audio_output_end', self.ready_to_continue)
 
@@ -102,7 +103,7 @@ class BrainSkill(MycroftSkill):
             #self.log.debug('loadup abilities = {}; abl = {}'.format(repr(abilities), repr(abl)))
             if not 'function' in repr(abl): continue
             rx = abl()
-            if not isinstance(rx, str) or not rx: continue
+            if not isinstance(rx, unicode) or not rx: continue
             self.bridged_funcs[rx] = abl
             self.add_ability(rx, self.handle_external_intent)
 
@@ -121,12 +122,14 @@ class BrainSkill(MycroftSkill):
         ext_func(self, msg)
 
     def load_chains(self):
-        self.thot_chains = {}
+        self.thot_chains = self.settings['thot_chains']
+        self.log.debug('All chains = {}'.format(str(self.thot_chains)))
 
-        for chain in self.settings['thot_chains']:
+        for chain in self.thot_chains:
             # chained abilities
-            if not isinstance(chain, str): continue
-            self.thot_chains[chain] = self.settings['thot_chains'][chain]
+            self.log.info('Adding chain "{}" of type = {}'.format(chain, type(chain)))
+            if not isinstance(chain, unicode): continue  # unicode instead of str for Py2 compat
+            #self.thot_chains[chain] = self.settings['thot_chains'][chain]
             self.add_ability(chain, self.handle_chain_intent)
 
     def handle_chain_intent(self, msg):
@@ -221,6 +224,7 @@ class BrainSkill(MycroftSkill):
                 abilities.whisper(self, link[1])
 
             else:
+                #self.log.debug('Shouting {}'.format(link[1]))
                 abilities.shout(self, link[1])
             timeout = 0
 

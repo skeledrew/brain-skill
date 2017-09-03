@@ -1,15 +1,34 @@
 # Brain Skill
 
 ## Usage:
-- say I have so much potential
-- holla back
+- Echo whatever you want it to
+  - say I have so much potential
+- Quick test
+  - holla back
 - reload abilities
-- ping
-- reset eyes *
-- look up/down/left/right/crossed *
-- set brightness to N * (N = 1-30)
+- Another test
+  - ping
+- Eye actions
+  - reset eyes *
+  - look up/down/left/right/crossed *
+  - set brightness to N * (N = 1-30)
 - what version are you
 - `* Mark 1 enclosure`
+- Create chains in settings.json to execute multiple actions at a single keyword (will be automated soon)
+`{
+    "thot_chains":
+    {
+        "play some blues on pandora":
+        [
+            ["shout", "play pandora"],
+            ["shout", "play blues radio"]
+        ],
+        "chicago weather":
+        [
+            ["shout", "what is the weather in chicago"]
+        ]
+    }
+}`
 
 ## Known Bugs, Quirks & Limits
 - External speaking is repeated sometimes
