@@ -15,7 +15,8 @@
 - what version are you
 - `* Mark 1 enclosure`
 - Create chains in settings.json to execute multiple actions at a single keyword (will be automated soon)
-`{
+``` json
+{
     "thot_chains":
     {
         "play some blues on pandora":
@@ -28,7 +29,8 @@
             ["shout", "what is the weather in chicago"]
         ]
     }
-}`
+}
+```
 
 ## Known Bugs, Quirks & Limits
 - External speaking is repeated sometimes
