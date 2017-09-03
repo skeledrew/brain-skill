@@ -100,10 +100,9 @@ class BrainSkill(MycroftSkill):
             # core abilities
             if '__' in abl: continue
             abl = getattr(abilities, abl)
-            #self.log.debug('loadup abilities = {}; abl = {}'.format(repr(abilities), repr(abl)))
             if not 'function' in repr(abl): continue
             rx = abl()
-            if not isinstance(rx, unicode) or not rx: continue
+            if not isinstance(rx, str) or not rx: continue
             self.bridged_funcs[rx] = abl
             self.add_ability(rx, self.handle_external_intent)
 
