@@ -12,6 +12,7 @@
   - reset eyes *
   - look up/down/left/right/crossed *
   - set brightness to N * (N = 1-30)
+  - eye color ColorName (valid names: http://www.w3.org/TR/css3-color/#svg-color)
 - what version are you
 - `* Mark 1 enclosure`
 - Create chains in settings.json to execute multiple actions at a single keyword (will be automated soon)

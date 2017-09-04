@@ -22,7 +22,14 @@
 import re, time
 import subprocess as sp
 
+from colour import Color
+
 from mycroft.messagebus.message import Message
+
+try:
+    import mycroftbss
+except:
+    pass
 
 
 def blank(this=None, msg=None):
@@ -41,10 +48,15 @@ def reset_eyes(this=None, msg=None):
     if not this: return 'reset eyes'
     this.enclosure.eyes_reset()
 
-def red_eyes(this=None, msg=None):
-    # doesn't work
-    if not this: return 'red eyes'
-    this.enclosure.eyes_color(255, 0, 0)
+def eyes_color(this=None, msg=None):
+    # TODO: process value dictation
+    if not this: return 'eye color (?P<Color>.+)'
+    color = msg.data.get('Color')
+    color = ''.join(color.split(' '))  # remove any spaces
+    color = Color(color)
+    r, g, b = color.rgb
+    this.log.info('Changing eye color to "{}", hex {}'.format(str(color), color.hex_l))
+    this.enclosure.eyes_color(r * 255, g * 255, b * 255)
 
 def look(this=None, msg=None):
     if not this: return 'look (?P<Where>\w+)'
@@ -88,45 +100,10 @@ def morning_report(this=None, msg=None):
     this.exec_chain(chain)
 
 def whisper(this=None, msg=None):
-    # direct query to a particular skill/intent; should prob not register
-    pattern = 'call intent (?P<Intent>.+) in skill (?P<Skill>.+) with data (?P<Data>.+)( and context )?(?P<Context>.+)?'
-    if not this and not msg: return None #pattern
-    data = {}
-
-    if isinstance(msg, unicode) and re.search(pattern, msg):
-        match = re.match(pattern, msg)
-        skill_id = match.group('Skill')
-        skill_id = ''.join(skill_id.title().split(' '))
-        intent_name = match.group('Intent')
-        intent_name = ''.join(intent_name.title().split(' '))
-        target = '{}:{}'.format(skill_id, intent_name)
-        data = match.group('Data')  # massage string into a dict
-        data = re.sub(' *and *', '&', re.sub(' *equal *', '=', data))
-        data = {key: value for key, value in [[d.split('=')[0], d.split('=')[1]] for d in data.split('&')]}
-        context = match.group('Context') #if 'Context' in msg.data else None
-        this.log.info('Generated message params: target = {}, data = {}, context = {}'.format(target, data, context))
-        this.emitter.emit(Message(target, data, context))
-        return
-
-    elif isinstance(msg, dict) and 'target' in msg:
-        # called as a regular function
-        target = msg['target']
-        data = msg['data']
-        context = msg['context'] if 'context' in msg else None
-        this.emitter.emit(Message(target, data, context))
-        return
-    this.log.error('Unable to process message: {}'.format(repr(msg)))
+    return mycroftbss.whisper(this, msg)
 
 def shout(this=None, utterances=None):
-    # broadcast query so any skill/intent can handle
-    if not this: return None  # prevent addition as ability
-
-    if not type(utterances) in [str, list, unicode]:
-        this.log.error('Expected string or list, got: {} which is {}'.format(repr(utterances), str(type(utterances))[1:-1]))
-        return None
-    if isinstance(utterances, unicode): utterances = [utterances.strip()]
-    this.emitter.emit(Message("recognizer_loop:utterance", {"lang": "en-us", "utterances": utterances}))
-    return True
+    return mycroftbss.shout(this, utterances)
 
 def core_version(this=None, msg=None):
     if not this: return 'what version are you'
@@ -148,3 +125,7 @@ def core_update(this=None, msg=None):
     this.log.info('Update tail = {}'.format('\n\t\t'.join(out.split('\n')[-5:])))
     out = sp.check_output('sudo apt-get install --only-upgrade mycroft-core mimic -y'.split(' '))
     this.log.info('Upgrade tail = {}'.format(out))
+
+def accept_intents(this=None, msg=None):
+    if not this: return 'accept0'  # avoid recognition
+    return
