@@ -58,7 +58,7 @@ def change_eyes_color(this=None, msg=None):
         this.log.error('{}'.format(repr(e)))
         this.speak('Sorry, but {}'.format(str(e.args)))
         return False
-        r, g, b = color.rgb
+    r, g, b = color.rgb
     this.log.info('Changing eye color to "{}", hex {}'.format(str(color), color.hex_l))
     this.enclosure.eyes_color(r * 255, g * 255, b * 255)
     return True
