@@ -56,6 +56,7 @@ def change_eyes_color(this=None, msg=None):
 
     except Exception as e:
         this.log.error('{}'.format(repr(e)))
+        this.speak('Sorry, but {}'.format(str(e.args)))
         return False
         r, g, b = color.rgb
     this.log.info('Changing eye color to "{}", hex {}'.format(str(color), color.hex_l))
