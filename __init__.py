@@ -39,14 +39,23 @@ from mycroft.messagebus.message import Message
 
 sys.path.append(abspath(dirname(__file__)))  # local imports hack
 
-import utils
-reload(utils)  # py2 method
+try:
+    reload(utils)  # py2 method
+
+except NameError:
+    import utils
 
 for name in dir(utils):
     # unpack
-    if not '__' in name: exec('{0} = getattr(utils, "{0}")'.format(name))
-import abilities
-reload(abilities)
+    if not '__' in name:
+        if eval('"{}" in globals()'.format(name)): exec('del {}'.format(name))
+        exec('{0} = getattr(utils, "{0}")'.format(name))
+
+try:
+    reload(abilities)
+
+except NameError:
+    import abilities
 
 
 __author__ = 'skeledrew'
