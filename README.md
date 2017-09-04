@@ -24,7 +24,7 @@ Essentially [Tasker](http://tasker.dinglisch.net/) for [Mycroft AI](https://mycr
   - "hey mycroft... eye color ColorName" * (valid names: http://www.w3.org/TR/css3-color/#svg-color)
 - Check core version
   - "hey mycroft... what version are you"
-- Create thought chains in settings.json to execute multiple actions at a single keyword (will be voice automated soon)
+- Create thought chains in settings.json to execute multiple abilities at a single keyword/phrase (will be voice automated soon)
 ``` json
 {
     "thot_chains":
@@ -37,7 +37,17 @@ Essentially [Tasker](http://tasker.dinglisch.net/) for [Mycroft AI](https://mycr
         "chicago weather":
         [
             ["shout", "what is the weather in chicago"]
-        ]
+        ],
+        "rainbow eyes":
+        [
+            ["shout", "eye color red"],
+            ["shout", "eye color orange"],
+            ["shout", "eye color yellow"],
+            ["shout", "eye color green"],
+            ["shout", "eye color blue"],
+            ["shout", "eye color indigo"],
+            ["shout", "eye color violet"]
+        ],
     }
 }
 ```
@@ -53,3 +63,4 @@ Essentially [Tasker](http://tasker.dinglisch.net/) for [Mycroft AI](https://mycr
 - autogenerate regex, vocab files
 - help system
 - webserver
+- event triggers and state management
