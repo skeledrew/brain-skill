@@ -51,10 +51,16 @@ def change_eyes_color(this=None, msg=None):
     if not this: return 'eye color (?P<Color>.+)'
     color = msg.data.get('Color')
     color = ''.join(color.split(' '))  # remove any spaces
-    color = Color(color)
-    r, g, b = color.rgb
+    try:
+        color = Color(color)
+
+    except Exception as e:
+        this.log.error('{}'.format(repr(e)))
+        return False
+        r, g, b = color.rgb
     this.log.info('Changing eye color to "{}", hex {}'.format(str(color), color.hex_l))
     this.enclosure.eyes_color(r * 255, g * 255, b * 255)
+    return True
 
 def look(this=None, msg=None):
     if not this: return 'look (?P<Where>\w+)'
