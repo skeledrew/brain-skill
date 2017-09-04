@@ -18,5 +18,5 @@
 # You should have received a copy of the GNU Affero General Public
 # License along with brain-skill.  If not, see <http://www.gnu.org/licenses/>.
 
-apt-get install pdbpp -y
 pip install git+https://github.com/dddomodossola/remi.git
+pip install git+https://github.com/skeledrew/mcbss.git

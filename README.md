@@ -1,21 +1,30 @@
-# Brain Skill
+# Mycroft Brain Skill
+
+
+## Description
+Essentially [Tasker](http://tasker.dinglisch.net/) for [Mycroft AI](https://mycroft.ai/), to help automate ALL THE THINGS. 'nuff said. NB: This is an early work in progress.
+
+## Installation
+- Setup Mycroft on a Linux desktop, build on a Pi, or purchase a Mark 1
+- Run `msm install https://github.com/skeledrew/brain-skill.git`
 
 ## Usage:
 - Echo whatever you want it to
-  - say I have so much potential
+  - "hey mycroft... say I have so much potential"
 - Quick test
-  - holla back
-- reload abilities
+  - "hey mycroft... holla back"
+- Reload abilities
+  - "hey mycroft... reload abilities"
 - Another test
-  - ping
+  - "hey mycroft... ping"
 - Eye actions
-  - reset eyes *
-  - look up/down/left/right/crossed *
-  - set brightness to N * (N = 1-30)
-  - eye color ColorName (valid names: http://www.w3.org/TR/css3-color/#svg-color)
-- what version are you
-- `* Mark 1 enclosure`
-- Create chains in settings.json to execute multiple actions at a single keyword (will be automated soon)
+  - "hey mycroft... reset eyes" *
+  - "hey mycroft... look up/down/left/right/crossed" *
+  - "hey mycroft... set brightness to N" * (N = 1-30)
+  - "hey mycroft... eye color ColorName" * (valid names: http://www.w3.org/TR/css3-color/#svg-color)
+- Check core version
+  - "hey mycroft... what version are you"
+- Create chains in settings.json to execute multiple actions at a single keyword (will be voice automated soon)
 ``` json
 {
     "thot_chains":
@@ -32,12 +41,15 @@
     }
 }
 ```
+- `* Mark 1 enclosure specific`
 
 ## Known Bugs, Quirks & Limits
-- External speaking is repeated sometimes
+- Can't think of any!
 
 ## To Do
-- learn spelling and new ability
+- learn spelling and chain abilities by voice
 - resource downloader
+- web API wrapper
 - autogenerate regex, vocab files
 - help system
+- webserver

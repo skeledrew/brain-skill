@@ -26,10 +26,8 @@ from colour import Color
 
 from mycroft.messagebus.message import Message
 
-try:
-    import mycroftbss
-except:
-    pass
+import mycroftbss  # https://github.com/skeledrew/mcbss
+reload(mycroftbss)
 
 
 def blank(this=None, msg=None):
@@ -48,7 +46,7 @@ def reset_eyes(this=None, msg=None):
     if not this: return 'reset eyes'
     this.enclosure.eyes_reset()
 
-def eyes_color(this=None, msg=None):
+def change_eyes_color(this=None, msg=None):
     # TODO: process value dictation
     if not this: return 'eye color (?P<Color>.+)'
     color = msg.data.get('Color')
@@ -63,7 +61,7 @@ def look(this=None, msg=None):
     where = msg.data.get('Where')
     this.enclosure.eyes_look(where[0])
 
-def illum(this=None, msg=None):
+def change_illum(this=None, msg=None):
     #return None  # don't load
     if not this: return 'set brightness to (?P<Amount>\d+)' #'(set|increase|decrease) (illumination|brightness) (to|by)? (?P<Amount>\d+)?( percent)?'
     command = msg.data.get('utterance')
@@ -105,12 +103,12 @@ def whisper(this=None, msg=None):
 def shout(this=None, utterances=None):
     return mycroftbss.shout(this, utterances)
 
-def core_version(this=None, msg=None):
+def say_core_version(this=None, msg=None):
     if not this: return 'what version are you'
     import mycroft.version
     this.speak(mycroft.version.CORE_VERSION_STR)
 
-def core_update(this=None, msg=None):
+def upgrade_core(this=None, msg=None):
     # TODO: needs sudo workaround
     return None  # disable
     if not this: return 'upgrade yourself'
@@ -127,5 +125,5 @@ def core_update(this=None, msg=None):
     this.log.info('Upgrade tail = {}'.format(out))
 
 def accept_intents(this=None, msg=None):
-    if not this: return 'accept0'  # avoid recognition
+    if not this: return 'accept000'  # register but avoid recognition
     return
