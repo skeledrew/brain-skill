@@ -6,7 +6,7 @@ Essentially [Tasker](http://tasker.dinglisch.net/) for [Mycroft AI](https://mycr
 
 ## Installation
 - Setup Mycroft on a Linux desktop, build on a Pi, or purchase a Mark 1
-- Run `msm install https://github.com/skeledrew/brain-skill.git`
+- Run `msm install https://github.com/skeledrew/brain-skill.git` or say "hey mycroft... install brain skill"
 
 ## Usage:
 - Echo whatever you want it to
@@ -24,7 +24,7 @@ Essentially [Tasker](http://tasker.dinglisch.net/) for [Mycroft AI](https://mycr
   - "hey mycroft... eye color ColorName" * (valid names: http://www.w3.org/TR/css3-color/#svg-color)
 - Check core version
   - "hey mycroft... what version are you"
-- Create chains in settings.json to execute multiple actions at a single keyword (will be voice automated soon)
+- Create thought chains in settings.json to execute multiple actions at a single keyword (will be voice automated soon)
 ``` json
 {
     "thot_chains":

@@ -134,3 +134,21 @@ def upgrade_core(this=None, msg=None):
 def accept_intents(this=None, msg=None):
     if not this: return 'accept000'  # register but avoid recognition
     return
+
+def check_condition(this=None, msg=None):
+    # emulate if-then-else
+    if not this: return 'check if (?P<Condition>.+) then (?P<TrueAction>.+)( otherwise)? (?P<FalseAction)?'
+    condition = msg.data.get('Condition')
+    true_action = msg.data.get('TrueAction')
+    false_action = msg.data.get('FalseAction', None)
+    which_action = process_condition(condition)
+    if which_action == None: return False
+    chosen_action = true_action if which_action else false_action if false_action else None
+    if not chosen_action: return True
+    comm_type = whisper if chosen_action.startswith('call intent') else shout
+    comm_type(this, chosen_action)
+    return True
+
+def process_condition(condition=None):
+    if not condition: return None  # prevent register
+    return
