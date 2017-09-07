@@ -93,16 +93,21 @@ class BrainSkill(MycroftSkill):
 
     def load_abilities(self):
         # load core and pipes
+        self.missing_abilities = []
 
-        for abl in dir(abilities):
+        for abl_name in dir(abilities):
             # core abilities
-            if '__' in abl: continue
-            abl = getattr(abilities, abl)
+            if '__' in abl_name: continue
+            abl = getattr(abilities, abl_name)
             if not 'function' in repr(abl): continue
             rx = abl()
             if not isinstance(rx, str) or not rx: continue
-            self.bridged_funcs[rx] = abl
-            self.add_ability(rx, self.handle_external_intent)
+            try:
+                self.add_ability(rx, self.handle_external_intent)
+                self.bridged_funcs[rx] = abl
+
+            except Exception as e:
+                self.missing_abilities.append([abl_name, str(e.args)])
 
     def handle_external_intent(self, msg):
         # bridge to function
@@ -155,12 +160,14 @@ class BrainSkill(MycroftSkill):
             return False
         missing_modules = abilities.check_imports(self)
 
-        if abilities_loaded and not missing_modules:
+        if abilities_loaded and not missing_modules and not self.missing_abilities:
             self.speak('All seems well')
 
         else:
             report = 'Something doesn\'t feel quite right.'
             report += ' I could not find the modules {}.'.format(', '.join(missing_modules)) if missing_modules else ''
+            report += ' I could not process the abilities {}.'.format(', '.join('{} because {}'.format(abl[0], abl[1]) for abl in self.missing_abilities))
+            self.enclosure.mouth_text('Problem(s) found in my brain :(')
             self.speak(report)
 
     def make_intents(self, rx):
