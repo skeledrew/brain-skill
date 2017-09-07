@@ -129,8 +129,12 @@ def shout(this=None, utterances=None):
 
 def say_core_version(this=None, msg=None):
     if not this: return 'what version are you'
-    import mycroft.version
-    this.speak(mycroft.version.CORE_VERSION_STR)
+    try:
+        import mycroft.version
+        this.speak(mycroft.version.CORE_VERSION_STR)
+
+    except Exception as e:
+        this.log.error('{}'.format(repr(e)))
 
 def upgrade_core(this=None, msg=None):
     # TODO: needs sudo workaround
@@ -154,7 +158,7 @@ def accept_intents(this=None, msg=None):
 
 def check_condition(this=None, msg=None):
     # emulate if-then-else
-    if not this: return 'check if (?P<Condition>.+) then (?P<TrueAction>.+)( otherwise)? (?P<FalseAction)?'
+    if not this: return 'check if (?P<Condition>.+) then (?P<TrueAction>.+)( otherwise)? (?P<FalseAction>.+)?'
     condition = msg.data.get('Condition')
     true_action = msg.data.get('TrueAction')
     false_action = msg.data.get('FalseAction', None)

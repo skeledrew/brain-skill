@@ -112,7 +112,7 @@ class BrainSkill(MycroftSkill):
 
         for rx in self.bridged_funcs:
             match = 'True' if rx == utt else 'False'
-            self.log.debug('searching for correct bridge; rx = {}; utt = {}; match = {}'.format(rx, utt, match))
+            #self.log.debug('searching for correct bridge; rx = {}; utt = {}; match = {}'.format(rx, utt, match))
             if not re.match(rx, utt): continue
             ext_func = self.bridged_funcs[rx]
             break
@@ -120,13 +120,12 @@ class BrainSkill(MycroftSkill):
 
     def load_chains(self):
         self.thot_chains = self.settings['thot_chains']
-        self.log.debug('All chains = {}'.format(str(self.thot_chains)))
+        #self.log.debug('All chains = {}'.format(str(self.thot_chains)))
 
         for chain in self.thot_chains:
             # chained abilities
             self.log.info('Adding chain "{}" of type = {}'.format(chain, type(chain)))
             if not isinstance(chain, unicode): continue  # unicode instead of str for Py2 compat
-            #self.thot_chains[chain] = self.settings['thot_chains'][chain]
             self.add_ability(chain, self.handle_chain_intent)
 
     def handle_chain_intent(self, msg):
