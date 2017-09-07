@@ -22,12 +22,25 @@
 import re, time
 import subprocess as sp
 
-from colour import Color
+missing_modules = []
+
+try:
+    from colour import Color
+
+except:
+    missing_module.append('colour')
 
 from mycroft.messagebus.message import Message
 
-import mycroftbss  # https://github.com/skeledrew/mcbss
-reload(mycroftbss)
+try:
+    reload(mycroftbss)
+
+except NameError:
+    try:
+        import mycroftbss  # https://github.com/skeledrew/mcbss
+
+    except ImportError, ModuleNotFoundError:
+        missing_module.append('mycroft brain skill services')
 
 
 def blank(this=None, msg=None):
@@ -35,8 +48,12 @@ def blank(this=None, msg=None):
     this.speak('Please copy this template to make your own abilities')
 
 def ping(this=None, msg=None):
-    if not this: return 'ping'
-    this.speak('I\'m here!')
+    if not this: return None
+    return True
+
+def check_imports(this=None, msg=None):
+    if not this: return None
+    return missing_modules
 
 def learn(this=None, msg=None):
     if not this: return 'learn new ability'

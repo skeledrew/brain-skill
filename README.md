@@ -10,13 +10,11 @@ Essentially [Tasker](http://tasker.dinglisch.net/) for [Mycroft AI](https://mycr
 
 ## Usage:
 - Echo whatever you want it to
-  - "hey mycroft... say I have so much potential"
-- Quick test
-  - "hey mycroft... holla back"
+  - "hey mycroft... announce I have so much potential"
+- Test to see if anything went wrong that was caught
+  - "hey mycroft... brain scan"
 - Reload abilities
   - "hey mycroft... reload abilities"
-- Another test
-  - "hey mycroft... ping"
 - Eye actions
   - "hey mycroft... reset eyes" *
   - "hey mycroft... look up/down/left/right/crossed" *

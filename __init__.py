@@ -19,17 +19,7 @@
 # License along with brain-skill.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import re, itertools
-from zlib import adler32
-import sys, time
-
-import pdb
-
-
-interact = False
-
-
-import sys
+import sys, time, re
 from os.path import dirname, abspath
 
 from adapt.intent import IntentBuilder
@@ -59,8 +49,7 @@ except NameError:
 
 
 __author__ = 'skeledrew'
-__version__ = '0.3.0'
-LOGGER = getLogger(__name__)
+__version__ = '0.3.1'
 
 
 class BrainSkill(MycroftSkill):
@@ -74,9 +63,9 @@ class BrainSkill(MycroftSkill):
         self.thot_chains = {}
 
     def initialize(self):
-        say_rx = 'say (?P<Words>.*)'
-        self.add_ability(say_rx, self.handle_say_intent)
-        self.add_ability('holla back', self.handle_holler_intent)
+        announce_rx = 'announce (?P<Words>.*)'
+        self.add_ability(announce_rx, self.handle_announce_intent)
+        self.add_ability('brain scan', self.handle_scan_intent)
         self.add_ability('reload abilities', self.reload_abilities)
         self.load_abilities()
         if not 'thot_chains' in self.settings: self.settings['thot_chains'] = {}
@@ -153,12 +142,27 @@ class BrainSkill(MycroftSkill):
             break
         self.exec_chain(chain)
 
-    def handle_say_intent(self, msg):
+    def handle_announce_intent(self, msg):
         words = msg.data.get('Words')
         self.speak(words)
 
-    def handle_holler_intent(self, msg):
-        self.speak('Woo woooo')
+    def handle_scan_intent(self, msg):
+        # check imports, etc and report status
+        abilities_loaded = False
+        try:
+            abilities_loaded = abilities.ping(self)
+        except:
+            self.speak('Failed to load abilities')
+            return False
+        missing_modules = abilities.check_imports(self)
+
+        if abilities_loaded and not missing_modules:
+            self.speak('All seems well')
+
+        else:
+            report = 'Something doesn\'t feel quite right.'
+            report += ' I could not find the modules {}.'.format(', '.join(missing_modules)) if missing_modules else ''
+            self.speak(report)
 
     def make_intents(self, rx):
         rx_combos = [rx]
@@ -232,26 +236,12 @@ class BrainSkill(MycroftSkill):
                 abilities.whisper(self, link[1])
 
             else:
-                #self.log.debug('Shouting {}'.format(link[1]))
                 abilities.shout(self, link[1])
             timeout = 0
 
             while self.waiting and timeout < 10:
                 time.sleep(1)
                 timeout += 1
-
-class TestSkill(MycroftSkill):
-
-    def __init__(self):
-        super(TestSkill, self).__init__(name='TestSkill')
-
-    def initialize(self):
-        self.register_vocabulary('testing', 'TestingKeyword')
-        testing_intent = IntentBuilder('TestingIntent').require('TestingKeyword').build()
-        self.register_intent(testing_intent, self.handle_testing_intent)
-
-    def handle_testing_intent(self, msg):
-        self.speak('testing one two three')
 
 def create_skill():
     return BrainSkill()
