@@ -40,7 +40,7 @@ except NameError:
         import mycroftbss  # https://github.com/skeledrew/mcbss
 
     except ImportError, ModuleNotFoundError:
-        missing_module.append('mycroft brain skill services')
+        missing_modules.append('mycroft brain skill services')
 
 
 def blank(this=None, msg=None):
