@@ -22,7 +22,7 @@
 import re, time
 import subprocess as sp
 
-missing_modules = []
+missing_module = []
 
 try:
     from colour import Color
@@ -40,7 +40,7 @@ except NameError:
         import mycroftbss  # https://github.com/skeledrew/mcbss
 
     except ImportError, ModuleNotFoundError:
-        missing_modules.append('mycroft brain skill services')
+        missing_module.append('mycroft brain skill services')
 
 
 def blank(this=None, msg=None):
