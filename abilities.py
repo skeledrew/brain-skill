@@ -28,7 +28,7 @@ try:
     from colour import Color
 
 except:
-    missing_module.append('colour')
+    missing_modules.append('colour')
 
 from mycroft.messagebus.message import Message
 
@@ -39,8 +39,8 @@ except NameError:
     try:
         import mycroftbss  # https://github.com/skeledrew/mcbss
 
-    except ImportError, ModuleNotFoundError:
-        missing_module.append('mycroft brain skill services')
+    except Exception:
+        missing_modules.append('mycroft brain skill services')
 
 
 def blank(this=None, msg=None):
