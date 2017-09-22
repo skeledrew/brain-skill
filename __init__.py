@@ -74,7 +74,7 @@ class BrainSkill(MycroftSkill):
         self.load_chains()
         self.emitter.on('recognizer_loop:audio_output_end', self.ready_to_continue)
         alert_msg = ' My path in brain skill services is wrong. There may be malware present.'
-        if not abilities.mycroftbss.set_brain_path(self) == dirname(inspect.getsourcefile(self)): self.alert(alert_msg)
+        if abilities.mycroftbss and not abilities.mycroftbss.set_brain_path(self) == dirname(inspect.getsourcefile(self)): self.alert(alert_msg)
 
     def add_ability(self, rx, handler):
         self.log.info('Binding "{}" to "{}"'.format(rx, repr(handler)))
@@ -171,7 +171,7 @@ class BrainSkill(MycroftSkill):
             report = 'Something doesn\'t feel quite right.'
             report += '{}'.join(self.alerts)
             report += ' I could not find the modules {}.'.format(', '.join(missing_modules)) if missing_modules else ''
-            report += ' I could not process the abilities {}.'.format(', '.join('{} because {}'.format(abl[0], abl[1]) for abl in self.missing_abilities))
+            report += ' I could not process the abilities {}.'.format(', '.join('{} because {}'.format(abl[0], abl[1]) for abl in self.missing_abilities)) if self.missing_abilities else ''
             self.enclosure.mouth_text('Problem(s) found in my brain :\'(')
             self.speak(report)
 
