@@ -125,7 +125,11 @@ class BrainSkill(MycroftSkill):
             if not re.match(rx, utt): continue
             ext_func = self.bridged_funcs[rx]
             break
+        if not ext_func:
+            self.log.error('Failed to resolve {} to an external action.'.format(utt))
+            return False
         ext_func(self, msg)
+        return True
 
     def load_chains(self):
         self.thot_chains = self.settings['thot_chains']
