@@ -22,6 +22,8 @@
 import sys, time, re
 from os.path import dirname, abspath
 
+import pexpect
+
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill
 from mycroft.util.log import getLogger
@@ -69,6 +71,8 @@ class BrainSkill(MycroftSkill):
         self.add_ability(announce_rx, self.handle_announce_intent)
         self.add_ability('brain scan', self.handle_scan_intent)
         self.add_ability('reload abilities', self.reload_abilities)
+        grep_log_rx = 'search skill log for (?P<Search>.*)'#( and )?(?P<Before>\d*)( before )?( and )?(?P<After>\d*)( after)?'
+        self.add_ability(grep_log_rx, self.handle_grep_log_intent)
         self.load_abilities()
         if not 'thot_chains' in self.settings: self.settings['thot_chains'] = {}
         self.load_chains()
@@ -121,12 +125,12 @@ class BrainSkill(MycroftSkill):
 
         for rx in self.bridged_funcs:
             match = 'True' if rx == utt else 'False'
-            #self.log.debug('searching for correct bridge; rx = {}; utt = {}; match = {}'.format(rx, utt, match))
+            self.log.debug('searching for correct bridge; rx = {}; utt = {}; match = {}'.format(rx, utt, match))
             if not re.match(rx, utt): continue
             ext_func = self.bridged_funcs[rx]
             break
         if not ext_func:
-            self.log.error('Failed to resolve {} to an external action.'.format(utt))
+            self.log.error('Failed to resolve "{}" to an external action.'.format(utt))
             return False
         ext_func(self, msg)
         return True
@@ -178,6 +182,19 @@ class BrainSkill(MycroftSkill):
             report += ' I could not process the abilities {}.'.format(', '.join('{} because {}'.format(abl[0], abl[1]) for abl in self.missing_abilities)) if self.missing_abilities else ''
             self.enclosure.mouth_text('Problem(s) found in my brain :\'(')
             self.speak(report)
+
+    def handle_grep_log_intent(self, msg):
+        search = msg.data.get('Search')
+        before = msg.data.get('Before', 5)
+        after = msg.data.get('After', 25)
+        cmd = '/bin/bash -c "cat /var/log/mycroft-skills.log |grep \"{}\" -B {} -A {}"'.format(search, before, after)
+        cgrep = 'nothing to see here...'
+        try:
+            cgrep = pexpect.run(cmd)
+        except Exception as e:
+            self.log.debug('Failed to get specified log: {}'.format(repr(e)))
+        self.log.info(cgrep)
+        self.speak("``` {} ```".format(cgrep))
 
     def make_intents(self, rx):
         rx_combos = [rx]
