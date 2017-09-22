@@ -61,6 +61,8 @@ class BrainSkill(MycroftSkill):
         self.Message = Message
         self.waiting = True
         self.thot_chains = {}
+        self.create_skill_ref = create_skill
+        self.alerts = []
 
     def initialize(self):
         announce_rx = 'announce (?P<Words>.*)'
@@ -71,6 +73,8 @@ class BrainSkill(MycroftSkill):
         if not 'thot_chains' in self.settings: self.settings['thot_chains'] = {}
         self.load_chains()
         self.emitter.on('recognizer_loop:audio_output_end', self.ready_to_continue)
+        alert_msg = ' My path in brain skill services is wrong. There may be malware present.'
+        if not abilities.mycroftbss.set_brain_path(self) == dirname(inspect.getsourcefile(self)): self.alert(alert_msg)
 
     def add_ability(self, rx, handler):
         self.log.info('Binding "{}" to "{}"'.format(rx, repr(handler)))
@@ -165,9 +169,10 @@ class BrainSkill(MycroftSkill):
 
         else:
             report = 'Something doesn\'t feel quite right.'
+            report += '{}'.join(self.alerts)
             report += ' I could not find the modules {}.'.format(', '.join(missing_modules)) if missing_modules else ''
             report += ' I could not process the abilities {}.'.format(', '.join('{} because {}'.format(abl[0], abl[1]) for abl in self.missing_abilities))
-            self.enclosure.mouth_text('Problem(s) found in my brain :(')
+            self.enclosure.mouth_text('Problem(s) found in my brain :\'(')
             self.speak(report)
 
     def make_intents(self, rx):
@@ -249,6 +254,9 @@ class BrainSkill(MycroftSkill):
                 time.sleep(1)
                 timeout += 1
 
+    def alert(self, text):
+        self.alerts.append(text)
+        self.enclosure.mouth_text('ALERT DETECTED')
 def create_skill():
     return BrainSkill()
 
