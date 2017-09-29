@@ -19,8 +19,13 @@
 # License along with brain-skill.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import re, time
-import subprocess as sp
+import re
+import time
+import sys
+
+import pexpect
+
+import utils
 
 missing_modules = []
 
@@ -41,6 +46,13 @@ except NameError:
 
     except Exception:
         missing_modules.append('mycroft brain skill services')
+
+state = None
+
+class State():
+
+    def __init__(self):
+        self.host_info = utils.str_to_dict(pexpect.run("/bin/sh -c 'cat /etc/*-release'").decode().split('\n'), '\r\n', '=')
 
 
 def blank(this=None, msg=None):
@@ -173,3 +185,22 @@ def check_condition(this=None, msg=None):
 def process_condition(condition=None):
     if not condition: return None  # prevent register
     return
+
+def run_shell_cmd(cmd=None, shell='/bin/bash'):
+    if not cmd: return None
+    out = None
+    try:
+        out = pexpect.run('{} -c "{}"'.format(shell, cmd)).decode()
+
+    except ExceptionPexpect:
+        shell = '/bin/sh'
+        out = pexpect.run('{} -c "{}"'.format(shell, cmd)).decode()
+
+    except Exception as e:
+        return e
+    return out
+
+if sys.argv[0] == '' and not __name__ == '__main__':
+    # running as import
+    global state
+    state = State()
