@@ -122,7 +122,19 @@ def bind_func(func, inst, name=''):
     setattr(inst, name, func.__get__(inst, inst.__class__))
     return func
 
+def str_to_dict(s, main_sep='&', map_sep='=', use_re=False):
+    # 17-09-29 - from common.py
+    final = {}
+    items = s.split(main_sep) if not use_re else re.split(main_sep, s)
+
+    for item in items:
+        item = item.split(map_sep) if not use_re else re.split(map_sep, item)
+        final[item[0]] = item[1] if len(item) == 2 else None
+    return final
+
+
 if sys.argv[0] == '' and not __name__ == '__main__':
+    # running as an import
     interact = True # for pdb trace activation
     print('pdb debugging activated')
 
