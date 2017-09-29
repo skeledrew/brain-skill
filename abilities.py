@@ -52,7 +52,7 @@ state = None
 class State():
 
     def __init__(self):
-        self.host_info = utils.str_to_dict(pexpect.run("/bin/sh -c 'cat /etc/*-release'").decode().split('\n'), '\r\n', '=')
+        self.host_info = utils.str_to_dict(pexpect.run("/bin/sh -c 'cat /etc/*-release'").decode(), '\r\n', '=')
 
 
 def blank(this=None, msg=None):
@@ -134,10 +134,16 @@ def morning_report(this=None, msg=None):
     this.exec_chain(chain)
 
 def whisper(this=None, msg=None):
-    return mycroftbss.whisper(this, msg)
+    try:
+        return mycroftbss.whisper(this, msg)
+    except Exception as e:
+        return e
 
 def shout(this=None, utterances=None):
-    return mycroftbss.shout(this, utterances)
+    try:
+        return mycroftbss.shout(this, utterances)
+    except Exception as e:
+        return e
 
 def say_core_version(this=None, msg=None):
     if not this: return 'what version are you'
@@ -155,13 +161,13 @@ def upgrade_core(this=None, msg=None):
     this.speak('I will now attempt to upgrade to the latest version')
     out = ''
     try:
-        out = sp.check_output(['sudo', 'apt-get', 'update'], shell=True)
+        out = run_shell_cmd('sudo apt update')
     except Exception as e:
         this.log.debug('Update failed: {}'.format(repr(e)))
         this.speak('Update failed. Please see log for details.')
         return
     this.log.info('Update tail = {}'.format('\n\t\t'.join(out.split('\n')[-5:])))
-    out = sp.check_output('sudo apt-get install --only-upgrade mycroft-core mimic -y'.split(' '))
+    out = run_shell_cmd('sudo apt-get install --only-upgrade mycroft-core mimic -y'.split(' '))
     this.log.info('Upgrade tail = {}'.format(out))
 
 def accept_intents(this=None, msg=None):

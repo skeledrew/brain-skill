@@ -24,9 +24,10 @@ from zlib import adler32
 import pdb
 import sys
 import json
-from os.path import exists, dirname
+from os.path import exists, dirname, abspath
 from threading import Timer
 from copy import deepcopy
+import inspect
 
 from mycroft.util.log import getLogger
 
@@ -132,6 +133,17 @@ def str_to_dict(s, main_sep='&', map_sep='=', use_re=False):
         final[item[0]] = item[1] if len(item) == 2 else None
     return final
 
+def get_file(obj):
+    # TODO: make more robust with errorchecks
+    fn = None
+
+    try:
+        fn = inspect.getsourcefile(obj)
+        if not '/' in fn: raise TypeError('bad path')
+
+    except TypeError:
+        fn = abspath(obj.__module__)
+    return fn
 
 if sys.argv[0] == '' and not __name__ == '__main__':
     # running as an import
