@@ -156,7 +156,7 @@ def say_core_version(this=None, msg=None):
 
 def upgrade_core(this=None, msg=None):
     # TODO: needs sudo workaround
-    return None  # disable
+    #return None  # disable
     if not this: return 'upgrade yourself'
     this.speak('I will now attempt to upgrade to the latest version')
     out = ''
@@ -167,7 +167,7 @@ def upgrade_core(this=None, msg=None):
         this.speak('Update failed. Please see log for details.')
         return
     this.log.info('Update tail = {}'.format('\n\t\t'.join(out.split('\n')[-5:])))
-    out = run_shell_cmd('sudo apt-get install --only-upgrade mycroft-core mimic -y'.split(' '))
+    out = run_shell_cmd('sudo apt install --only-upgrade mycroft-core mimic -y'.split(' '))
     this.log.info('Upgrade tail = {}'.format(out))
 
 def accept_intents(this=None, msg=None):

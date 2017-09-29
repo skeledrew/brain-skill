@@ -139,7 +139,7 @@ def get_file(obj):
 
     try:
         fn = inspect.getsourcefile(obj)
-        if not '/' in fn: raise TypeError('bad path')
+        if not '/' in fn or len(fn) < 4: raise TypeError('bad path')
 
     except TypeError:
         fn = abspath(obj.__module__)

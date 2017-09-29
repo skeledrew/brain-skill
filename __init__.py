@@ -78,7 +78,14 @@ class BrainSkill(MycroftSkill):
         self.load_chains()
         self.emitter.on('recognizer_loop:audio_output_end', self.ready_to_continue)
         alert_msg = ' My path in brain skill services is wrong. There may be malware present.'
-        if abilities.mycroftbss and not abilities.mycroftbss.set_brain_path(self) == dirname(utils.get_file(self)): self.alert(alert_msg)
+
+        try:
+            mcbss_path = abilities.mycroftbss.set_brain_path(self)
+            bs_path = dirname(utils.get_file(self))
+            if mcbss_path and not mcbss_path == bs_path: self.alert(alert_msg, '{} vs {}'.format(mcbss_path, bs_path))
+
+        except:
+            pass
 
     def add_ability(self, rx, handler):
         self.log.info('Binding "{}" to "{}"'.format(rx, repr(handler)))
@@ -172,7 +179,7 @@ class BrainSkill(MycroftSkill):
             return False
         missing_modules = abilities.check_imports(self)
 
-        if abilities_loaded and not missing_modules and not self.missing_abilities:
+        if abilities_loaded and not missing_modules and not self.missing_abilities and not self.alerts:
             self.speak('All seems well')
 
         else:
@@ -275,9 +282,11 @@ class BrainSkill(MycroftSkill):
                 time.sleep(1)
                 timeout += 1
 
-    def alert(self, text):
+    def alert(self, text, details):
         self.alerts.append(text)
         self.enclosure.mouth_text('ALERT DETECTED')
+        self.log.info('!!!ALERT DETECTED!!! {} -- {}'.format(text, details))
+
 def create_skill():
     return BrainSkill()
 
