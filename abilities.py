@@ -47,6 +47,8 @@ except NameError:
     except Exception:
         missing_modules.append('mycroft brain skill services')
 
+import utils
+
 state = None
 
 class State():
@@ -208,6 +210,7 @@ def run_shell_cmd(cmd=None, su=False, shell='/bin/bash'):
     except Exception as e:
         return e
     return out
+
 
 if sys.argv[0] == '' and not __name__ == '__main__':
     # running as import

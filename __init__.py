@@ -111,6 +111,7 @@ class BrainSkill(MycroftSkill):
     def load_abilities(self):
         # load core and pipes
         self.missing_abilities = []
+        if interact: pdb.set_trace()
 
         for abl_name in dir(abilities):
             # core abilities
@@ -118,7 +119,8 @@ class BrainSkill(MycroftSkill):
             abl = getattr(abilities, abl_name)
             if not 'function' in repr(abl): continue
             rx = abl()
-            if not isinstance(rx, str) or not rx: continue
+            if not isinstance(rx, bytes) or not rx: continue  # bytes for py2
+            self.log.info('Process rx {}, type {}'.format(rx, type(rx)))
             try:
                 self.add_ability(rx, self.handle_external_intent)
                 self.bridged_funcs[rx] = abl
@@ -128,7 +130,7 @@ class BrainSkill(MycroftSkill):
 
     def handle_external_intent(self, msg):
         # bridge to function
-        #self.log.debug('bridging; m_data = {}'.format(repr(msg.data)))
+        self.log.debug('bridging; m_data = {}'.format(repr(msg.data)))
         ext_func = None
         utt = msg.data.get('utterance')
 
@@ -288,6 +290,7 @@ class BrainSkill(MycroftSkill):
         self.alerts.append(text)
         self.enclosure.mouth_text('ALERT DETECTED')
         self.log.info('!!!ALERT DETECTED!!! {} -- {}'.format(text, details))
+
 
 def create_skill():
     return BrainSkill()
