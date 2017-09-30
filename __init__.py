@@ -22,7 +22,7 @@
 from imp import reload  # py2/3; needed cuz reload used on utils
 
 import sys, time, re
-from os.path import dirname, abspath
+from os.path import dirname, abspath, exists
 
 import pexpect
 
@@ -67,6 +67,11 @@ class BrainSkill(MycroftSkill):
         self.thot_chains = {}
         self.create_skill_ref = create_skill
         self.alerts = []
+
+        if not exists('settings.json'):
+            # create settings file if it isn't found
+            with open('settings.json', 'w') as sf:
+                sf.write('{}')
 
     def initialize(self):
         announce_rx = 'announce (?P<Words>.*)'
