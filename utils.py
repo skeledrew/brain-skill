@@ -19,6 +19,10 @@
 # License along with brain-skill.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from __future__ import unicode_literals
+from builtins import bytes, str
+from imp import reload
+
 import re, itertools
 from zlib import adler32
 import pdb
@@ -115,7 +119,7 @@ def expand_rx(rx, ignore_named_groups=True):
 
 def hash_sum(data):
     # 17-08-24 - remove 'utf-8' arg from bytes for py2 compat
-    return adler32(bytes(data))
+    return adler32(bytes(data, 'utf-8'))
 
 def bind_func(func, inst, name=''):
     # bind a function to a class as a method

@@ -19,6 +19,8 @@
 # License along with brain-skill.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from imp import reload  # py2/3; needed cuz reload used on utils
+
 import sys, time, re
 from os.path import dirname, abspath
 
@@ -32,7 +34,7 @@ from mycroft.messagebus.message import Message
 sys.path.append(abspath(dirname(__file__)))  # local imports hack
 
 try:
-    reload(utils)  # py2 method
+    reload(utils)
 
 except NameError:
     import utils
@@ -112,7 +114,7 @@ class BrainSkill(MycroftSkill):
 
         for abl_name in dir(abilities):
             # core abilities
-            if '__' in abl_name: continue
+            if '__' in abl_name or abl_name in dir(utils): continue
             abl = getattr(abilities, abl_name)
             if not 'function' in repr(abl): continue
             rx = abl()
@@ -149,7 +151,7 @@ class BrainSkill(MycroftSkill):
         for chain in self.thot_chains:
             # chained abilities
             self.log.info('Adding chain "{}" of type = {}'.format(chain, type(chain)))
-            if not isinstance(chain, unicode): continue  # unicode instead of str for Py2 compat
+            if not isinstance(chain, str): continue  # unicode instead of str for Py2 compat
             self.add_ability(chain, self.handle_chain_intent)
 
     def handle_chain_intent(self, msg):

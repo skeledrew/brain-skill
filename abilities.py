@@ -19,13 +19,13 @@
 # License along with brain-skill.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from utils import unicode_literals, bytes, str, reload
+
 import re
 import time
 import sys
 
 import pexpect
-
-import utils
 
 missing_modules = []
 
@@ -161,14 +161,16 @@ def upgrade_core(this=None, msg=None):
     this.speak('I will now attempt to upgrade to the latest version')
     out = ''
     try:
-        out = run_shell_cmd('sudo apt update')
+        out = run_shell_cmd('sudo apt update', True)
     except Exception as e:
         this.log.debug('Update failed: {}'.format(repr(e)))
         this.speak('Update failed. Please see log for details.')
         return
-    this.log.info('Update tail = {}'.format('\n\t\t'.join(out.split('\n')[-5:])))
-    out = run_shell_cmd('sudo apt install --only-upgrade mycroft-core mimic -y'.split(' '))
+    this.log.info('Update tail = {}'.format('\n\t\t'.join(out.split('\n')[-5:]) if isinstance(out, str) else repr(out)))
+    out = run_shell_cmd('sudo apt install --only-upgrade mycroft-core mimic -y'.split(' '), True)
     this.log.info('Upgrade tail = {}'.format(out))
+    msg = 'Upgrade seems successful. You should check the Mycroft version.'
+    this.speak(msg)
 
 def accept_intents(this=None, msg=None):
     if not this: return 'accept000'  # register but avoid recognition
@@ -192,15 +194,16 @@ def process_condition(condition=None):
     if not condition: return None  # prevent register
     return
 
-def run_shell_cmd(cmd=None, shell='/bin/bash'):
+def run_shell_cmd(cmd=None, su=False, shell='/bin/bash'):
     if not cmd: return None
+    cmd = '{} -c "{}"'.format(shell, cmd)
     out = None
     try:
-        out = pexpect.run('{} -c "{}"'.format(shell, cmd)).decode()
+        out = pexpect.run(cmd).decode() if not su else state.sudo_client.run_as_sudo(pexpect.run, [cmd]).decode()
 
-    except ExceptionPexpect:
+    except pexpect.exceptions.ExceptionPexpect:
         shell = '/bin/sh'
-        out = pexpect.run('{} -c "{}"'.format(shell, cmd)).decode()
+        out = pexpect.run(cmd).decode() if not su else state.sudo_client.run_as_sudo(pexpect.run, [cmd]).decode()
 
     except Exception as e:
         return e
