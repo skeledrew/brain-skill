@@ -67,6 +67,7 @@ class BrainSkill(MycroftSkill):
         self.thot_chains = {}
         self.create_skill_ref = create_skill
         self.alerts = []
+        self.abilities = abilities
 
     def initialize(self):
 

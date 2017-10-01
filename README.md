@@ -28,7 +28,10 @@ Essentially [Tasker](http://tasker.dinglisch.net/) for [Mycroft AI](https://mycr
   * "eye color ColorName" ^ (valid names: http://www.w3.org/TR/css3-color/#svg-color)
 * Check core version
   * "what version are you"
+* Search logs
   * "search skill log for SearchTerm" (not for instances with voice output)
+* Test SU
+  * "test super user"
 * Create thought chains in settings.json to execute multiple abilities at a single keyword/phrase (will be voice automated soon)
 ``` json
 {

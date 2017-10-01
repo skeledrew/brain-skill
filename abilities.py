@@ -55,6 +55,7 @@ class State():
 
     def __init__(self):
         self.host_info = utils.str_to_dict(pexpect.run("/bin/sh -c 'cat /etc/*-release'").decode(), '\r\n', '=')
+        self.su_access = False
 
 
 def blank(this=None, msg=None):
@@ -198,6 +199,7 @@ def process_condition(condition=None):
 
 def run_shell_cmd(cmd=None, su=False, shell='/bin/bash'):
     if not cmd: return None
+    if cmd.startswith('sudo '): su = True
     cmd = '{} -c "{}"'.format(shell, cmd)
     out = None
     try:
@@ -211,6 +213,19 @@ def run_shell_cmd(cmd=None, su=False, shell='/bin/bash'):
         return e
     return out
 
+def test_su(this=None, msg=None):
+    if not this: return 'test super user'
+    out = run_shell_cmd('sudo ls')
+
+    if not isinstance(out, str) or not 'abilities' in out:
+        this.log.info('SU test; out = {}'.format(repr(out)))
+        state.su_access = False
+        this.speak('Test failed...')
+
+    else:
+        state.su_access = True
+        this.speak('Test successful!')
+    return True
 
 if sys.argv[0] == '' and not __name__ == '__main__':
     # running as import
