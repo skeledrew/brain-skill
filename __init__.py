@@ -68,12 +68,16 @@ class BrainSkill(MycroftSkill):
         self.create_skill_ref = create_skill
         self.alerts = []
 
-        if not exists('settings.json'):
-            # create settings file if it isn't found
-            with open('settings.json', 'w') as sf:
-                sf.write('{}')
-
     def initialize(self):
+
+        try:
+            if not exists('settings.json'):
+                # create settings file if it isn't found
+                with open('settings.json', 'w') as sf:
+                    sf.write('{}')
+
+        except Exception as e:
+            self.log.debug('Cannot access settings.json: {}'.format(repr(e)))
         announce_rx = 'announce (?P<Words>.*)'
         self.add_ability(announce_rx, self.handle_announce_intent)
         self.add_ability('brain scan', self.handle_scan_intent)
